@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitness Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <h1>💪 Fitness Tracker</h1>
+            </div>
+            <div class="user-info" id="userInfo" style="display: none;">
+                <span id="currentUsername"></span>
+                <button onclick="logout()" class="btn btn-secondary">Logout</button>
+            </div>
+        </header>
+
+        <!-- Login/Register Section -->
+        <section id="authSection" class="auth-section">
+            <div class="auth-container">
+                <div class="auth-tabs">
+                    <button class="auth-tab active" onclick="showAuthTab('login')">Login</button>
+                    <button class="auth-tab" onclick="showAuthTab('register')">Register</button>
+                </div>
+
+                <!-- Login Form -->
+                <div id="loginForm" class="auth-form">
+                    <h2>Welcome Back!</h2>
+                    <form onsubmit="login(event)">
+                        <div class="form-group">
+                            <label for="loginUsername">Username</label>
+                            <input type="text" id="loginUsername" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </form>
+                </div>
+
+                <!-- Register Form -->
+                <div id="registerForm" class="auth-form" style="display: none;">
+                    <h2>Create Account</h2>
+                    <form onsubmit="register(event)">
+                        <div class="form-group">
+                            <label for="regUsername">Username</label>
+                            <input type="text" id="regUsername" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="regEmail">Email</label>
+                            <input type="email" id="regEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="regFullName">Full Name (optional)</label>
+                            <input type="text" id="regFullName">
+                        </div>
+                        <div class="form-group">
+                            <label for="regTargetWeight">Target Weight (kg)</label>
+                            <input type="number" id="regTargetWeight" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label for="regWeeklyMinutes">Weekly Workout Goal (minutes)</label>
+                            <input type="number" id="regWeeklyMinutes">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Register</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Dashboard -->
+        <section id="dashboardSection" class="dashboard" style="display: none;">
+            <!-- Navigation Tabs -->
+            <div class="nav-tabs">
+                <button class="nav-tab active" onclick="showTab('dashboard')">📊 Dashboard</button>
+                <button class="nav-tab" onclick="showTab('workouts')">🏋️ Workouts</button>
+                <button class="nav-tab" onclick="showTab('meals')">🍽️ Meals</button>
+                <button class="nav-tab" onclick="showTab('weight')">⚖️ Weight</button>
+                <button class="nav-tab" onclick="showTab('reports')">📈 Reports</button>
+            </div>
+
+            <!-- Dashboard Tab -->
+            <div id="dashboardTab" class="tab-content active">
+                <h2>Dashboard</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">🏋️</div>
+                        <div class="stat-info">
+                            <h3 id="totalWorkouts">0</h3>
+                            <p>Total Workouts</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⏱️</div>
+                        <div class="stat-info">
+                            <h3 id="totalMinutes">0</h3>
+                            <p>Total Minutes</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🍽️</div>
+                        <div class="stat-info">
+                            <h3 id="totalMeals">0</h3>
+                            <p>Meals Logged</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⚖️</div>
+                        <div class="stat-info">
+                            <h3 id="currentWeight">--</h3>
+                            <p>Current Weight (kg)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h3>Weight Progress (Last 30 Days)</h3>
+                    <canvas id="weightChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h3>Workout Distribution</h3>
+                    <canvas id="workoutChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Workouts Tab -->
+            <div id="workoutsTab" class="tab-content">
+                <div class="tab-header">
+                    <h2>Workouts</h2>
+                    <button class="btn btn-primary" onclick="showAddWorkoutForm()">+ Add Workout</button>
+                </div>
+
+                <!-- Add Workout Form -->
+                <div id="addWorkoutForm" class="form-card" style="display: none;">
+                    <h3>Add New Workout</h3>
+                    <form onsubmit="addWorkout(event)">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="workoutType">Type</label>
+                                <select id="workoutType" required>
+                                    <option value="running">Running</option>
+                                    <option value="cycling">Cycling</option>
+                                    <option value="swimming">Swimming</option>
+                                    <option value="strength">Strength Training</option>
+                                    <option value="yoga">Yoga</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="workoutDuration">Duration (minutes)</label>
+                                <input type="number" id="workoutDuration" min="1" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="workoutIntensity">Intensity</label>
+                                <select id="workoutIntensity" required>
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="workoutDate">Date</label>
+                                <input type="date" id="workoutDate" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="workoutNotes">Notes (optional)</label>
+                            <textarea id="workoutNotes" rows="3"></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Save Workout</button>
+                            <button type="button" class="btn btn-secondary" onclick="hideAddWorkoutForm()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Workouts List -->
+                <div class="date-filter">
+                    <label>Filter by date:</label>
+                    <input type="date" id="workoutsFromDate">
+                    <span>to</span>
+                    <input type="date" id="workoutsToDate">
+                    <button class="btn btn-secondary" onclick="loadWorkouts()">Apply</button>
+                </div>
+                <div id="workoutsList" class="items-list"></div>
+            </div>
+
+            <!-- Meals Tab -->
+            <div id="mealsTab" class="tab-content">
+                <div class="tab-header">
+                    <h2>Meals</h2>
+                    <button class="btn btn-primary" onclick="showAddMealForm()">+ Add Meal</button>
+                </div>
+
+                <!-- Add Meal Form -->
+                <div id="addMealForm" class="form-card" style="display: none;">
+                    <h3>Add New Meal</h3>
+                    <form onsubmit="addMeal(event)">
+                        <div class="form-group">
+                            <label for="mealName">Meal Name</label>
+                            <input type="text" id="mealName" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="mealCalories">Calories</label>
+                                <input type="number" id="mealCalories" min="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="mealTime">Time</label>
+                                <input type="datetime-local" id="mealTime" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="mealProtein">Protein (g)</label>
+                                <input type="number" id="mealProtein" min="0" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label for="mealCarbs">Carbs (g)</label>
+                                <input type="number" id="mealCarbs" min="0" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label for="mealFat">Fat (g)</label>
+                                <input type="number" id="mealFat" min="0" step="0.1">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Save Meal</button>
+                            <button type="button" class="btn btn-secondary" onclick="hideAddMealForm()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Meals List -->
+                <div class="date-filter">
+                    <label>Filter by date:</label>
+                    <input type="date" id="mealsFromDate">
+                    <span>to</span>
+                    <input type="date" id="mealsToDate">
+                    <button class="btn btn-secondary" onclick="loadMeals()">Apply</button>
+                </div>
+                <div id="mealsList" class="items-list"></div>
+            </div>
+
+            <!-- Weight Tab -->
+            <div id="weightTab" class="tab-content">
+                <div class="tab-header">
+                    <h2>Weight Tracking</h2>
+                    <button class="btn btn-primary" onclick="showAddWeightForm()">+ Log Weight</button>
+                </div>
+
+                <!-- Add Weight Form -->
+                <div id="addWeightForm" class="form-card" style="display: none;">
+                    <h3>Log Weight</h3>
+                    <form onsubmit="addWeight(event)">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="weightValue">Weight (kg)</label>
+                                <input type="number" id="weightValue" min="0" step="0.1" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="weightDate">Date</label>
+                                <input type="date" id="weightDate" required>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Save Weight</button>
+                            <button type="button" class="btn btn-secondary" onclick="hideAddWeightForm()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Weight Logs List -->
+                <div class="date-filter">
+                    <label>Filter by date:</label>
+                    <input type="date" id="weightFromDate">
+                    <span>to</span>
+                    <input type="date" id="weightToDate">
+                    <button class="btn btn-secondary" onclick="loadWeightLogs()">Apply</button>
+                </div>
+                <div id="weightLogsList" class="items-list"></div>
+            </div>
+
+            <!-- Reports Tab -->
+            <div id="reportsTab" class="tab-content">
+                <h2>Progress Reports</h2>
+                
+                <div class="form-card">
+                    <h3>Generate Report</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="reportFromDate">From Date</label>
+                            <input type="date" id="reportFromDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="reportToDate">To Date</label>
+                            <input type="date" id="reportToDate" required>
+                        </div>
+                        <div class="form-group" style="align-self: flex-end;">
+                            <button class="btn btn-primary" onclick="generateReport()">Generate Report</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="reportContent" class="report-content"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
