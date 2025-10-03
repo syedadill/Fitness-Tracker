@@ -6,20 +6,40 @@ A simple fitness tracking application with both a web interface and CLI. Track w
 
 ### Prerequisites
 
-- Python 3.10 or higher
-- MongoDB (running on localhost:27017)
-- Redis (running on localhost:6379)
+- **Python 3.10 or higher**
+- **Docker Desktop** (easiest way to run MongoDB and Redis)
+  - OR install MongoDB and Redis manually if you prefer
 
 ### Installation
 
 1. **Clone the repository** (or download the code)
 
-2. **Install dependencies:**
+2. **Start MongoDB and Redis using Docker:**
+```powershell
+docker-compose up -d
+```
+This will start MongoDB on port 27017 and Redis on port 6379 in the background.
+
+> **Note:** If you don't have Docker, you'll need to install and run MongoDB and Redis manually on your system.
+
+3. **Create and activate a virtual environment:**
+```powershell
+# Create virtual environment
+python -m venv venv
+
+# Activate it (PowerShell)
+.\venv\Scripts\Activate.ps1
+
+# Or on Command Prompt
+.\venv\Scripts\activate.bat
+```
+
+4. **Install dependencies:**
 ```powershell
 pip install -r requirements.txt
 ```
 
-3. **Start the application:**
+5. **Start the application:**
 
 **Web Interface** (Recommended):
 ```powershell
@@ -140,15 +160,31 @@ Run with coverage:
 pytest tests/ --cov --cov-report=html
 ```
 
-## 🐳 Docker Setup (Optional)
+## 🐳 Docker Setup
 
-If you prefer using Docker:
+**For MongoDB and Redis (Required):**
+
+The easiest way to run MongoDB and Redis is using Docker Compose:
 
 ```powershell
 docker-compose up -d
 ```
 
-This starts MongoDB, Redis, and the application together.
+This starts:
+- MongoDB on `localhost:27017`
+- Redis on `localhost:6379`
+
+To stop the services:
+```powershell
+docker-compose down
+```
+
+To view logs:
+```powershell
+docker-compose logs -f
+```
+
+> **Alternative:** If you don't want to use Docker, install MongoDB and Redis manually on your system.
 
 ## 🔧 Common Commands Reference
 
